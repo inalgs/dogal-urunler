@@ -22,9 +22,6 @@ app.use(express.urlencoded({ extended: true }));
 // Statik dosyalar
 const publicDir = path.join(__dirname, '../public');
 const adminDir = path.join(__dirname, '../admin');
-console.log('Public dir:', publicDir, 'exists:', fs.existsSync(publicDir));
-console.log('Admin dir:', adminDir, 'exists:', fs.existsSync(adminDir));
-console.log('index.html exists:', fs.existsSync(path.join(publicDir, 'index.html')));
 app.use(express.static(publicDir));
 app.use('/admin', express.static(adminDir));
 
@@ -36,8 +33,8 @@ app.use('/api/orders', require('./routes/orders'));
 app.use('/api/blog', require('./routes/blog'));
 app.use('/api/payment', require('./routes/payment'));
 
-// SPA fallback - HTML sayfaları için (Express 5 syntax)
-app.get('/admin/{*path}', (req, res) => {
+// SPA fallback
+app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, '../admin/index.html'));
 });
 
@@ -46,18 +43,8 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// HTML sayfalari icin fallback
-app.get('*.html', (req, res) => {
-  const filePath = path.join(__dirname, '../public', req.path);
-  if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    res.status(404).sendFile(path.join(__dirname, '../public/index.html'));
-  }
-});
-
 // 404 handler
-app.use('/api/{*path}', (req, res) => {
+app.use('/api/*', (req, res) => {
   res.status(404).json({ error: 'API endpoint bulunamadı' });
 });
 
