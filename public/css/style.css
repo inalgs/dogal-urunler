@@ -1571,6 +1571,32 @@ textarea.form-control {
 }
 
 /* ===== RESPONSIVE ===== */
+
+/* Tablet */
+@media (max-width: 992px) {
+  .hero .container {
+    gap: 30px;
+  }
+
+  .hero-content h1 {
+    font-size: 2.2rem;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-detail {
+    gap: 30px;
+  }
+}
+
+/* Mobil */
 @media (max-width: 768px) {
   .mobile-toggle {
     display: block;
@@ -1588,10 +1614,35 @@ textarea.form-control {
     gap: 16px;
     box-shadow: var(--shadow-lg);
     border-top: 1px solid var(--border);
+    z-index: 999;
   }
 
   .nav-links.active {
     display: flex;
+  }
+
+  .nav-actions {
+    gap: 10px;
+  }
+
+  .navbar .container {
+    height: 60px;
+  }
+
+  .navbar-logo {
+    height: 42px;
+  }
+
+  /* Slogan Banner */
+  .slogan-banner {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 50px 0 40px;
   }
 
   .hero .container {
@@ -1600,20 +1651,180 @@ textarea.form-control {
   }
 
   .hero-content h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .hero-content p {
     margin: 0 auto 28px;
+    font-size: 1rem;
   }
 
   .hero-badges {
     justify-content: center;
     flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .hero-badge {
+    padding: 6px 12px;
+    font-size: 0.78rem;
   }
 
   .hero-image {
     display: none;
+  }
+
+  /* Sections */
+  .section {
+    padding: 40px 0;
+  }
+
+  .section-title {
+    margin-bottom: 28px;
+  }
+
+  .section-title h2 {
+    font-size: 1.5rem;
+  }
+
+  .section-title p {
+    font-size: 0.9rem;
+  }
+
+  /* Products Grid */
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .product-card-image {
+    height: 160px;
+  }
+
+  .product-card-body {
+    padding: 10px;
+  }
+
+  .product-card-body h3 {
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+
+  .product-card-category {
+    font-size: 0.7rem;
+  }
+
+  .product-price .current {
+    font-size: 1rem;
+  }
+
+  .product-price .old {
+    font-size: 0.75rem;
+  }
+
+  .product-weight {
+    font-size: 0.7rem;
+    margin-bottom: 8px;
+  }
+
+  .product-card-footer {
+    padding: 0 10px 10px;
+  }
+
+  .product-card-footer .btn {
+    font-size: 0.78rem;
+    padding: 6px 10px;
+  }
+
+  /* Product Detail */
+  .product-detail {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px 0;
+  }
+
+  .product-gallery {
+    position: static;
+  }
+
+  .product-gallery-main {
+    min-height: 280px;
+  }
+
+  .product-gallery-main img {
+    height: 280px;
+  }
+
+  .product-thumb {
+    height: 65px;
+  }
+
+  .product-detail-info h1 {
+    font-size: 1.4rem;
+  }
+
+  .product-detail-info .price {
+    font-size: 1.5rem;
+  }
+
+  .product-actions {
+    gap: 8px;
+  }
+
+  .product-action-btn {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .add-to-cart-section {
+    flex-wrap: wrap;
+  }
+
+  /* Product Tabs */
+  .product-tabs {
+    margin-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .product-tab-btn {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+
+  /* Features */
+  .features-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .feature-card {
+    padding: 20px 12px;
+  }
+
+  .feature-card i {
+    font-size: 1.8rem;
+  }
+
+  .feature-card h3 {
+    font-size: 1rem;
+  }
+
+  .feature-card p {
+    font-size: 0.85rem;
+  }
+
+  /* Blog */
+  .blog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .blog-card-image {
+    height: 160px;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 40px 0 16px;
   }
 
   .footer-grid {
@@ -1621,15 +1832,7 @@ textarea.form-control {
     gap: 24px;
   }
 
-  .product-detail {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .profile-grid {
-    grid-template-columns: 1fr;
-  }
-
+  /* Cart */
   .cart-table thead {
     display: none;
   }
@@ -1656,26 +1859,168 @@ textarea.form-control {
     font-size: 0.85rem;
   }
 
-  .blog-grid {
+  .cart-summary {
+    padding: 16px;
+  }
+
+  /* Checkout */
+  .checkout-grid {
     grid-template-columns: 1fr;
   }
 
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  /* Order Status */
+  .order-status {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .status-step {
+    flex: 0 0 auto;
+    min-width: 70px;
+  }
+
+  .status-step .icon {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .status-step p {
+    font-size: 0.7rem;
+  }
+
+  /* Recommendations */
+  .recommendations-grid {
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+  }
+
+  /* Share Modal */
+  .share-buttons {
+    flex-direction: column;
+  }
+
+  .share-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Toast */
+  .toast-container {
+    top: 70px;
+    right: 10px;
+    left: 10px;
+  }
+
+  .toast {
+    max-width: 100%;
+  }
+
+  /* Auth */
+  .auth-card {
+    padding: 24px 16px;
+  }
+
+  /* Page Header */
+  .page-header {
+    padding: 30px 0;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    font-size: 0.78rem;
+    padding: 10px 0;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Nutrition Table */
+  .nutrition-table th,
+  .nutrition-table td {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+  }
+
+  /* Buttons */
+  .btn-lg {
+    padding: 12px 24px;
+    font-size: 1rem;
   }
 }
 
+/* Küçük mobil */
 @media (max-width: 480px) {
   .hero-content h1 {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
+  }
+
+  .hero {
+    padding: 36px 0 30px;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .product-card-image {
+    height: 130px;
+  }
+
+  .product-card-body h3 {
+    font-size: 0.82rem;
+  }
+
+  .product-price .current {
+    font-size: 0.9rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-gallery-main {
+    min-height: 220px;
+  }
+
+  .product-gallery-main img {
+    height: 220px;
+  }
+
+  .product-thumb {
+    height: 55px;
+  }
+
+  .product-detail-info h1 {
+    font-size: 1.2rem;
+  }
+
+  .product-detail-info .price {
+    font-size: 1.3rem;
   }
 
   .section {
-    padding: 40px 0;
+    padding: 30px 0;
+  }
+
+  .section-title h2 {
+    font-size: 1.3rem;
   }
 
   .auth-card {
-    padding: 24px;
+    padding: 20px 14px;
+  }
+
+  .navbar-logo {
+    height: 36px;
+  }
+
+  .slogan-banner {
+    font-size: 0.75rem;
+    padding: 6px 10px;
   }
 }
