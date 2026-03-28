@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ürün Detay - Doğal Ürünler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="slogan-banner">
+    <div class="slogan-text">
+      <span>Emekten Bereket, Gelenekten Gelecek</span>
+    </div>
+  </div>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand"><i class="bi bi-tree" style="color:#8bc34a;font-size:1.8rem"></i> Doğal<span>Ürünler</span></a>
+      <ul class="nav-links">
+        <li><a href="/">Ana Sayfa</a></li>
+        <li><a href="/products.html">Ürünler</a></li>
+        <li><a href="/blog.html">Blog</a></li>
+        <li><a href="/about.html">Hakkımızda</a></li>
+        <li><a href="/contact.html">İletişim</a></li>
+      </ul>
+      <div class="nav-actions"></div>
+      <button class="mobile-toggle" onclick="toggleMobileMenu()"><i class="bi bi-list"></i></button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/">Ana Sayfa</a> <span>/</span>
+      <a href="/products.html">Ürünler</a> <span>/</span>
+      <span id="breadcrumbName">...</span>
+    </div>
+  </div>
+
+  <section class="container">
+    <div class="product-detail" id="productDetail">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </section>
+
+  <!-- TABS: Özellikler, Yorumlar -->
+  <section class="container" id="productTabs" style="display:none">
+    <div class="product-tabs">
+      <div class="product-tabs-nav">
+        <button class="product-tab-btn active" onclick="switchTab('specs')">Özellikler</button>
+        <button class="product-tab-btn" onclick="switchTab('reviews')">Yorumlar <span id="reviewCount"></span></button>
+      </div>
+
+      <!-- Özellikler Tab -->
+      <div class="product-tab-content active" id="tab-specs">
+        <div id="specsContent"></div>
+      </div>
+
+      <!-- Yorumlar Tab -->
+      <div class="product-tab-content" id="tab-reviews">
+        <div id="reviewsList"></div>
+
+        <div class="review-form" id="reviewFormSection">
+          <h3 style="margin-bottom:16px;color:var(--primary)">Yorum Yap</h3>
+          <div id="reviewAlert"></div>
+          <form id="reviewForm">
+            <div class="form-group">
+              <label>Puanınız</label>
+              <div class="star-rating" id="starRating">
+                <i class="bi bi-star-fill" data-star="1"></i>
+                <i class="bi bi-star-fill" data-star="2"></i>
+                <i class="bi bi-star-fill" data-star="3"></i>
+                <i class="bi bi-star-fill" data-star="4"></i>
+                <i class="bi bi-star-fill" data-star="5"></i>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Yorumunuz</label>
+              <textarea class="form-control" id="reviewText" placeholder="Bu ürün hakkında ne düşünüyorsunuz?" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Yorum Gönder</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ÜRÜN ÖNERİLERİ -->
+  <section class="section section-alt" id="recommendationsSection" style="display:none">
+    <div class="container">
+      <div class="section-title">
+        <h2>Bunları da Beğenebilirsiniz</h2>
+        <p>Benzer doğal ürünlerimiz</p>
+      </div>
+      <div class="recommendations-grid" id="recommendationsGrid"></div>
+    </div>
+  </section>
+
+  <!-- TAVSİYE ET MODAL -->
+  <div id="shareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px">
+    <div style="background:white;border-radius:var(--radius);padding:32px;max-width:460px;width:100%">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h2 style="color:var(--primary);font-size:1.2rem"><i class="bi bi-share"></i> Tavsiye Et</h2>
+        <button onclick="closeShareModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer">&times;</button>
+      </div>
+      <p style="color:var(--text-light);margin-bottom:16px">Bu ürünü arkadaşlarınızla paylaşın!</p>
+      <div class="share-buttons">
+        <button class="share-btn whatsapp" onclick="shareWhatsApp()"><i class="bi bi-whatsapp"></i> WhatsApp</button>
+        <button class="share-btn twitter" onclick="shareTwitter()"><i class="bi bi-twitter-x"></i> Twitter</button>
+        <button class="share-btn facebook" onclick="shareFacebook()"><i class="bi bi-facebook"></i> Facebook</button>
+        <button class="share-btn copy-link" onclick="copyLink()"><i class="bi bi-link-45deg"></i> Link Kopyala</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer" style="margin-top:0">
+    <div class="container">
+
+      <div class="footer-bottom">&copy; 2026 DoğalÜrünler. Tüm hakları saklıdır.</div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+  <script>
+    const slug = new URLSearchParams(window.location.search).get('slug');
+    let currentProduct = null;
+    let selectedRating = 0;
+
+    // ===== FAVORİLER =====
+    function getFavorites() {
+      return JSON.parse(localStorage.getItem('favorites') || '[]');
+    }
+
+    function toggleFavorite(productId) {
+      if (!Auth.isLoggedIn()) {
+        showToast('Favorilere eklemek için giriş yapın', 'error');
+        return;
+      }
+      let favs = getFavorites();
+      const idx = favs.indexOf(productId);
+      const btn = document.getElementById('favBtn');
+      if (idx > -1) {
+        favs.splice(idx, 1);
+        btn.classList.remove('active');
+        btn.innerHTML = '<i class="bi bi-heart"></i> Favorilerime Ekle';
+        showToast('Favorilerden çıkarıldı');
+      } else {
+        favs.push(productId);
+        btn.classList.add('active');
+        btn.innerHTML = '<i class="bi bi-heart-fill"></i> Favorilerimde';
+        showToast('Favorilere eklendi!');
+      }
+      localStorage.setItem('favorites', JSON.stringify(favs));
+    }
+
+    // ===== KARŞILAŞTIR =====
+    function getCompareList() {
+      return JSON.parse(localStorage.getItem('compareList') || '[]');
+    }
+
+    function toggleCompare(productId) {
+      let list = getCompareList();
+      const idx = list.indexOf(productId);
+      const btn = document.getElementById('compareBtn');
+      if (idx > -1) {
+        list.splice(idx, 1);
+        btn.classList.remove('active');
+        btn.innerHTML = '<i class="bi bi-arrow-left-right"></i> Karşılaştır';
+        showToast('Karşılaştırmadan çıkarıldı');
+      } else {
+        if (list.length >= 4) {
+          showToast('En fazla 4 ürün karşılaştırabilirsiniz', 'error');
+          return;
+        }
+        list.push(productId);
+        btn.classList.add('active');
+        btn.innerHTML = '<i class="bi bi-arrow-left-right"></i> Karşılaştırmada';
+        showToast('Karşılaştırmaya eklendi!');
+      }
+      localStorage.setItem('compareList', JSON.stringify(list));
+    }
+
+    // ===== TAVSİYE ET =====
+    function openShareModal() {
+      document.getElementById('shareModal').style.display = 'flex';
+    }
+
+    function closeShareModal() {
+      document.getElementById('shareModal').style.display = 'none';
+    }
+
+    function shareWhatsApp() {
+      const text = `${currentProduct.name} - ${formatPrice(currentProduct.price)} | Doğal Ürünler`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + window.location.href)}`, '_blank');
+    }
+
+    function shareTwitter() {
+      const text = `${currentProduct.name} - Doğal ve katkısız!`;
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
+    }
+
+    function shareFacebook() {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        showToast('Link kopyalandı!');
+        closeShareModal();
+      });
+    }
+
+    document.getElementById('shareModal').addEventListener('click', (e) => {
+      if (e.target.id === 'shareModal') closeShareModal();
+    });
+
+    // ===== TABS =====
+    function switchTab(tabName) {
+      document.querySelectorAll('.product-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.product-tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    // ===== YILDIZ RATING =====
+    document.getElementById('starRating').addEventListener('click', (e) => {
+      const star = e.target.closest('[data-star]');
+      if (!star) return;
+      selectedRating = parseInt(star.dataset.star);
+      document.querySelectorAll('#starRating i').forEach((s, idx) => {
+        s.classList.toggle('filled', idx < selectedRating);
+      });
+    });
+
+    // ===== YORUMLAR (localStorage tabanlı) =====
+    function getReviews(productSlug) {
+      const all = JSON.parse(localStorage.getItem('reviews') || '{}');
+      return all[productSlug] || [];
+    }
+
+    function saveReview(productSlug, review) {
+      const all = JSON.parse(localStorage.getItem('reviews') || '{}');
+      if (!all[productSlug]) all[productSlug] = [];
+      all[productSlug].unshift(review);
+      localStorage.setItem('reviews', JSON.stringify(all));
+    }
+
+    function renderReviews() {
+      const reviews = getReviews(slug);
+      const container = document.getElementById('reviewsList');
+      document.getElementById('reviewCount').textContent = reviews.length > 0 ? `(${reviews.length})` : '';
+
+      if (reviews.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-light)"><i class="bi bi-chat-dots" style="font-size:2rem;display:block;margin-bottom:8px"></i>Henüz yorum yapılmamış. İlk yorumu siz yazın!</div>';
+        return;
+      }
+
+      container.innerHTML = reviews.map(r => `
+        <div class="review-card">
+          <div class="review-header">
+            <span class="review-author"><i class="bi bi-person-circle"></i> ${r.author}</span>
+            <span class="review-date">${r.date}</span>
+          </div>
+          <div class="review-stars">${'<i class="bi bi-star-fill"></i>'.repeat(r.rating)}${'<i class="bi bi-star"></i>'.repeat(5 - r.rating)}</div>
+          <div class="review-text">${r.text}</div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('reviewForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!Auth.isLoggedIn()) {
+        document.getElementById('reviewAlert').innerHTML = '<div class="alert alert-error">Yorum yapmak için <a href="/login.html" style="color:inherit;text-decoration:underline">giriş yapın</a>.</div>';
+        return;
+      }
+      if (selectedRating === 0) {
+        document.getElementById('reviewAlert').innerHTML = '<div class="alert alert-error">Lütfen puan seçin.</div>';
+        return;
+      }
+      const user = Auth.getUser();
+      saveReview(slug, {
+        author: user.name,
+        rating: selectedRating,
+        text: document.getElementById('reviewText').value,
+        date: new Date().toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })
+      });
+      showToast('Yorumunuz eklendi!');
+      document.getElementById('reviewForm').reset();
+      selectedRating = 0;
+      document.querySelectorAll('#starRating i').forEach(s => s.classList.remove('filled'));
+      document.getElementById('reviewAlert').innerHTML = '';
+      renderReviews();
+    });
+
+    // ===== GALERİ =====
+    function switchImage(src, thumbEl) {
+      document.getElementById('mainImage').src = src;
+      document.querySelectorAll('.product-thumb').forEach(t => t.classList.remove('active'));
+      thumbEl.classList.add('active');
+    }
+
+    // ===== ÜRÜN YÜKLE =====
+    async function loadProduct() {
+      if (!slug) { window.location.href = '/products.html'; return; }
+      try {
+        const p = await API.get(`/products/${slug}`);
+        currentProduct = p;
+        document.title = `${p.name} - Doğal Ürünler`;
+        document.getElementById('breadcrumbName').textContent = p.name;
+
+        const isFav = getFavorites().includes(p.id);
+        const isCompare = getCompareList().includes(p.id);
+
+        // Görselleri topla
+        const images = [p.image, p.image2, p.image3, p.image4].filter(Boolean);
+
+        document.getElementById('productDetail').innerHTML = `
+          <div class="product-gallery">
+            <div class="product-gallery-main" id="galleryMain">
+              ${images.length > 0
+                ? `<img src="${images[0]}" alt="${p.name}" id="mainImage">`
+                : `<i class="bi bi-image" style="font-size:5rem;color:var(--border)"></i>`}
+            </div>
+            ${images.length > 1 ? `
+              <div class="product-gallery-thumbs">
+                ${images.map((img, i) => `
+                  <div class="product-thumb ${i === 0 ? 'active' : ''}" onclick="switchImage('${img}', this)">
+                    <img src="${img}" alt="${p.name} - ${i + 1}">
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+          <div class="product-detail-info">
+            <div class="category">${p.category_name || 'Genel'}</div>
+            <h1>${p.name}</h1>
+            <div class="price">
+              ${formatPrice(p.price)}
+              ${p.old_price ? `<span style="font-size:1.1rem;color:var(--text-light);text-decoration:line-through;margin-left:12px">${formatPrice(p.old_price)}</span>` : ''}
+            </div>
+            ${p.weight ? `<div class="weight"><i class="bi bi-box"></i> Ağırlık: ${p.weight}</div>` : ''}
+            <div class="stock ${p.stock > 0 ? 'in-stock' : 'out-of-stock'}">
+              <i class="bi bi-${p.stock > 0 ? 'check-circle' : 'x-circle'}"></i>
+              ${p.stock > 0 ? `Stokta (${p.stock} adet)` : 'Stokta yok'}
+            </div>
+            <div class="description">${p.description ? (p.description.length > 150 ? p.description.substring(0, 150) + '...' : p.description) : ''}</div>
+            ${p.stock > 0 ? `
+              <div class="add-to-cart-section">
+                <div class="quantity-control">
+                  <button onclick="changeQty(-1)">-</button>
+                  <span id="qty">1</span>
+                  <button onclick="changeQty(1)">+</button>
+                </div>
+                <button class="btn btn-accent btn-lg" onclick="addToCart(${p.id}, getQty())">
+                  <i class="bi bi-cart-plus"></i> Sepete Ekle
+                </button>
+              </div>
+            ` : ''}
+
+            <!-- AKSİYON BUTONLARI -->
+            <div class="product-actions">
+              <button class="product-action-btn ${isFav ? 'active' : ''}" id="favBtn" onclick="toggleFavorite(${p.id})">
+                <i class="bi bi-heart${isFav ? '-fill' : ''}"></i> ${isFav ? 'Favorilerimde' : 'Favorilerime Ekle'}
+              </button>
+              <button class="product-action-btn ${isCompare ? 'active' : ''}" id="compareBtn" onclick="toggleCompare(${p.id})">
+                <i class="bi bi-arrow-left-right"></i> ${isCompare ? 'Karşılaştırmada' : 'Karşılaştır'}
+              </button>
+              <button class="product-action-btn" onclick="openShareModal()">
+                <i class="bi bi-share"></i> Tavsiye Et
+              </button>
+              <button class="product-action-btn" onclick="switchTab('reviews'); document.getElementById('productTabs').scrollIntoView({behavior:'smooth'})">
+                <i class="bi bi-chat-dots"></i> Yorum Yap
+              </button>
+            </div>
+          </div>
+        `;
+
+        // Özellikler içeriği: Açıklama + İçindekiler + Besin Değeri
+        let specsHTML = '';
+
+        // 1) Açıklama
+        if (p.description) {
+          specsHTML += `
+            <h3 class="tab-section-title"><i class="bi bi-card-text"></i> Ürün Açıklaması</h3>
+            <div style="line-height:1.8;color:var(--text);margin-bottom:28px">${p.description}</div>
+          `;
+        }
+
+        // 2) İçindekiler
+        if (p.ingredients) {
+          specsHTML += `
+            <h3 class="tab-section-title"><i class="bi bi-list-check"></i> İçindekiler</h3>
+            <div class="ingredients-box">${p.ingredients}</div>
+          `;
+        }
+
+        // 3) Besin Değeri Tablosu (Türk Gıda Kodeksi sıralaması)
+        let nutrition = null;
+        try { nutrition = typeof p.nutrition === 'string' ? JSON.parse(p.nutrition) : p.nutrition; } catch(e) {}
+
+        if (nutrition) {
+          const nutritionOrder = [
+            { key: 'enerji_kcal', label: 'Enerji', unit: 'kcal' },
+            { key: 'enerji_kj', label: 'Enerji', unit: 'kJ' },
+            { key: 'yag', label: 'Yağ', unit: 'g' },
+            { key: 'doymus_yag', label: '— Doymuş Yağ', unit: 'g' },
+            { key: 'karbonhidrat', label: 'Karbonhidrat', unit: 'g' },
+            { key: 'seker', label: '— Şeker', unit: 'g' },
+            { key: 'lif', label: 'Lif', unit: 'g' },
+            { key: 'protein', label: 'Protein', unit: 'g' },
+            { key: 'tuz', label: 'Tuz', unit: 'g' }
+          ];
+
+          const rows = nutritionOrder
+            .filter(n => nutrition[n.key] !== undefined && nutrition[n.key] !== null)
+            .map(n => `<tr><td>${n.label}</td><td>${nutrition[n.key]} ${n.unit}</td></tr>`)
+            .join('');
+
+          if (rows) {
+            specsHTML += `
+              <h3 class="tab-section-title"><i class="bi bi-clipboard2-data"></i> Besin Değeri <small style="font-weight:400;color:var(--text-light)">(100 g başına)</small></h3>
+              <table class="nutrition-table">
+                <thead><tr><th>Besin Öğesi</th><th>Miktar</th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            `;
+          }
+        }
+
+        document.getElementById('specsContent').innerHTML = specsHTML || '<p style="color:var(--text-light);text-align:center;padding:24px">Bu ürün için henüz detay bilgisi eklenmemiştir.</p>';
+
+        document.getElementById('productTabs').style.display = 'block';
+
+        // Yorumları yükle
+        renderReviews();
+
+        // Ürün önerilerini yükle
+        loadRecommendations(p);
+
+      } catch (e) {
+        document.getElementById('productDetail').innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1">
+            <i class="bi bi-exclamation-circle"></i>
+            <h3>Ürün bulunamadı</h3>
+            <a href="/products.html" class="btn btn-primary">Ürünlere Dön</a>
+          </div>`;
+      }
+    }
+
+    // ===== ÜRÜN ÖNERİLERİ =====
+    async function loadRecommendations(product) {
+      try {
+        let url = '/products?limit=4';
+        if (product.category_name) {
+          const cats = await API.get('/products/categories');
+          const cat = cats.find(c => c.name === product.category_name);
+          if (cat) url = `/products?category=${cat.slug}&limit=5`;
+        }
+        const products = await API.get(url);
+        const filtered = products.filter(p => p.id !== product.id).slice(0, 4);
+
+        if (filtered.length === 0) return;
+
+        document.getElementById('recommendationsGrid').innerHTML = filtered.map(p => `
+          <div class="product-card">
+            <a href="/product-detail.html?slug=${p.slug}" class="product-card-image" style="height:160px">
+              ${p.image ? `<img src="${p.image}" alt="${p.name}">` : `<i class="bi bi-image placeholder-icon"></i>`}
+            </a>
+            <div class="product-card-body">
+              <h3 style="font-size:0.95rem"><a href="/product-detail.html?slug=${p.slug}">${p.name}</a></h3>
+              <div class="product-price">
+                <span class="current" style="font-size:1rem">${formatPrice(p.price)}</span>
+              </div>
+            </div>
+            <div class="product-card-footer">
+              <button class="btn btn-accent btn-block btn-sm" onclick="addToCart(${p.id})">
+                <i class="bi bi-cart-plus"></i> Sepete Ekle
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        document.getElementById('recommendationsSection').style.display = 'block';
+      } catch (e) { /* ignore */ }
+    }
+
+    function getQty() { return parseInt(document.getElementById('qty')?.textContent || 1); }
+    function changeQty(delta) {
+      const el = document.getElementById('qty');
+      if (!el) return;
+      const newVal = Math.max(1, parseInt(el.textContent) + delta);
+      el.textContent = newVal;
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog - Doğal Ürünler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="slogan-banner">
+    <div class="slogan-text">
+      <span>Emekten Bereket, Gelenekten Gelecek</span>
+    </div>
+  </div>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand"><i class="bi bi-tree" style="color:#8bc34a;font-size:1.8rem"></i> Doğal<span>Ürünler</span></a>
+      <ul class="nav-links">
+        <li><a href="/">Ana Sayfa</a></li>
+        <li><a href="/products.html">Ürünler</a></li>
+        <li><a href="/blog.html">Blog</a></li>
+        <li><a href="/about.html">Hakkımızda</a></li>
+      </ul>
+      <div class="nav-actions"></div>
+      <button class="mobile-toggle" onclick="toggleMobileMenu()"><i class="bi bi-list"></i></button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/">Ana Sayfa</a> <span>/</span>
+      <a href="/blog.html">Blog</a> <span>/</span>
+      <span id="breadcrumbTitle">...</span>
+    </div>
+  </div>
+
+  <article class="section">
+    <div class="container" style="max-width:800px">
+      <div id="blogContent">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </article>
+
+  <footer class="footer">
+    <div class="container">
+
+      <div class="footer-bottom">&copy; 2026 DoğalÜrünler. Tüm hakları saklıdır.</div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+  <script>
+    const slug = new URLSearchParams(window.location.search).get('slug');
+
+    async function loadPost() {
+      if (!slug) { window.location.href = '/blog.html'; return; }
+      try {
+        const post = await API.get(`/blog/${slug}`);
+        document.title = `${post.title} - Doğal Ürünler`;
+        document.getElementById('breadcrumbTitle').textContent = post.title;
+
+        // Convert markdown-like bold to html
+        const content = post.content
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\n/g, '<br>');
+
+        document.getElementById('blogContent').innerHTML = `
+          ${post.image ? `<img src="${post.image}" alt="${post.title}" style="width:100%;border-radius:var(--radius);margin-bottom:24px;max-height:400px;object-fit:cover">` : ''}
+          <div style="color:var(--text-light);font-size:0.9rem;margin-bottom:16px">
+            <i class="bi bi-calendar3"></i> ${formatDate(post.created_at)}
+            ${post.author_name ? `| <i class="bi bi-person"></i> ${post.author_name}` : ''}
+          </div>
+          <h1 style="font-size:2rem;color:var(--primary);margin-bottom:24px">${post.title}</h1>
+          <div style="font-size:1.05rem;line-height:1.9;color:var(--text)">${content}</div>
+          <div style="margin-top:40px;padding-top:20px;border-top:1px solid var(--border)">
+            <a href="/blog.html" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Tüm Yazılar</a>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('blogContent').innerHTML = `
+          <div class="empty-state">
+            <i class="bi bi-exclamation-circle"></i>
+            <h3>Yazı bulunamadı</h3>
+            <a href="/blog.html" class="btn btn-primary">Blog'a Dön</a>
+          </div>`;
+      }
+    }
+    loadPost();
+  </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Yönetimi - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <button class="mobile-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+
+  <aside class="sidebar">
+    <div class="sidebar-brand"><i class="bi bi-tree"></i> Admin Panel</div>
+    <ul class="sidebar-menu">
+      <li><a href="/admin/"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+      <li><a href="/admin/products.html"><i class="bi bi-box-seam"></i> Ürünler</a></li>
+      <li><a href="/admin/orders.html"><i class="bi bi-receipt"></i> Siparişler</a></li>
+      <li><a href="/admin/blog.html" class="active"><i class="bi bi-journal-text"></i> Blog</a></li>
+    </ul>
+    <div class="sidebar-divider"></div>
+    <ul class="sidebar-menu">
+      <li><a href="/"><i class="bi bi-house"></i> Siteye Git</a></li>
+      <li><a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <h1>Blog Yönetimi</h1>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openBlogModal()">
+          <i class="bi bi-plus-lg"></i> Yeni Yazı
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Başlık</th>
+            <th>Yazar</th>
+            <th>Durum</th>
+            <th>Tarih</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="blogTable">
+          <tr><td colspan="5" style="text-align:center;padding:24px">Yükleniyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- BLOG MODAL -->
+  <div class="modal-overlay" id="blogModal" style="display:none">
+    <div class="modal" style="max-width:700px">
+      <div class="modal-header">
+        <h2 id="blogModalTitle">Yeni Blog Yazısı</h2>
+        <button class="modal-close" onclick="closeBlogModal()">&times;</button>
+      </div>
+      <form id="blogForm">
+        <input type="hidden" id="blogId">
+        <div class="form-group">
+          <label>Başlık</label>
+          <input type="text" class="form-control" id="title" required>
+        </div>
+        <div class="form-group">
+          <label>Özet</label>
+          <input type="text" class="form-control" id="summary" placeholder="Kısa bir özet...">
+        </div>
+        <div class="form-group">
+          <label>İçerik</label>
+          <textarea class="form-control" id="content" style="min-height:200px" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Görsel</label>
+          <input type="file" class="form-control" id="blogImage" accept="image/*">
+        </div>
+        <div style="margin-bottom:16px">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="is_published"> Yayınla
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/admin/js/admin.js"></script>
+  <script>
+    if (!checkAdmin()) throw new Error('Unauthorized');
+
+    async function loadBlog() {
+      try {
+        const posts = await API.get('/blog/admin/all');
+        const tbody = document.getElementById('blogTable');
+        tbody.innerHTML = posts.length === 0
+          ? '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-light)">Henüz yazı yok</td></tr>'
+          : posts.map(p => `
+            <tr>
+              <td><strong>${p.title}</strong></td>
+              <td>${p.author_name || '-'}</td>
+              <td>${p.is_published ? '<span class="badge badge-success">Yayında</span>' : '<span class="badge badge-warning">Taslak</span>'}</td>
+              <td>${formatDate(p.created_at)}</td>
+              <td>
+                <button class="btn btn-sm btn-outline" onclick="editBlog(${p.id})"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteBlog(${p.id}, '${p.title.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          `).join('');
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    function openBlogModal() {
+      document.getElementById('blogModalTitle').textContent = 'Yeni Blog Yazısı';
+      document.getElementById('blogId').value = '';
+      document.getElementById('blogForm').reset();
+      document.getElementById('blogModal').style.display = 'flex';
+    }
+
+    function closeBlogModal() {
+      document.getElementById('blogModal').style.display = 'none';
+    }
+
+    async function editBlog(id) {
+      try {
+        const posts = await API.get('/blog/admin/all');
+        const post = posts.find(p => p.id === id);
+        if (!post) throw new Error('Yazı bulunamadı');
+
+        document.getElementById('blogId').value = id;
+        document.getElementById('title').value = post.title;
+        document.getElementById('summary').value = post.summary || '';
+        document.getElementById('content').value = post.content;
+        document.getElementById('is_published').checked = !!post.is_published;
+        document.getElementById('blogModalTitle').textContent = 'Yazıyı Düzenle';
+        document.getElementById('blogModal').style.display = 'flex';
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function deleteBlog(id, title) {
+      if (!confirm(`"${title}" yazısını silmek istediğinize emin misiniz?`)) return;
+      try {
+        await API.delete(`/blog/${id}`);
+        showToast('Yazı silindi');
+        loadBlog();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    document.getElementById('blogForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('blogId').value;
+      const formData = new FormData();
+      formData.append('title', document.getElementById('title').value);
+      formData.append('summary', document.getElementById('summary').value);
+      formData.append('content', document.getElementById('content').value);
+      formData.append('is_published', document.getElementById('is_published').checked ? 1 : 0);
+
+      const imageFile = document.getElementById('blogImage').files[0];
+      if (imageFile) formData.append('image', imageFile);
+
+      try {
+        if (id) {
+          await API.put(`/blog/${id}`, formData);
+          showToast('Yazı güncellendi');
+        } else {
+          await API.post('/blog', formData);
+          showToast('Yazı eklendi');
+        }
+        closeBlogModal();
+        loadBlog();
+      } catch (e) { showToast(e.message, 'error'); }
+    });
+
+    document.getElementById('blogModal').addEventListener('click', (e) => {
+      if (e.target.id === 'blogModal') closeBlogModal();
+    });
+
+    loadBlog();
+  </script>
+</body>
+</html>

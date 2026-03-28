@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Siparişlerim - Doğal Ürünler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="slogan-banner">
+    <div class="slogan-text">
+      <span>Emekten Bereket, Gelenekten Gelecek</span>
+    </div>
+  </div>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="navbar-brand"><i class="bi bi-tree" style="color:#8bc34a;font-size:1.8rem"></i> Doğal<span>Ürünler</span></a>
+      <ul class="nav-links">
+        <li><a href="/">Ana Sayfa</a></li>
+        <li><a href="/products.html">Ürünler</a></li>
+        <li><a href="/blog.html">Blog</a></li>
+        <li><a href="/about.html">Hakkımızda</a></li>
+      </ul>
+      <div class="nav-actions"></div>
+      <button class="mobile-toggle" onclick="toggleMobileMenu()"><i class="bi bi-list"></i></button>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Siparişlerim</h1>
+    <p>Sipariş geçmişinizi takip edin</p>
+  </div>
+
+  <section class="section">
+    <div class="container" style="max-width:900px">
+      <div id="ordersContent">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+
+      <div class="footer-bottom">&copy; 2026 DoğalÜrünler. Tüm hakları saklıdır.</div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+  <script>
+    if (!Auth.isLoggedIn()) { window.location.href = '/login.html'; }
+
+    const statusSteps = ['beklemede', 'hazirlaniyor', 'kargoda', 'teslim_edildi'];
+    const statusIcons = {
+      'beklemede': 'bi-clock',
+      'hazirlaniyor': 'bi-box-seam',
+      'kargoda': 'bi-truck',
+      'teslim_edildi': 'bi-check-circle'
+    };
+
+    async function loadOrders() {
+      try {
+        const orders = await API.get('/orders');
+        const container = document.getElementById('ordersContent');
+
+        if (orders.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="bi bi-box-seam"></i>
+              <h3>Henüz siparişiniz yok</h3>
+              <p>İlk siparişinizi vermek ister misiniz?</p>
+              <a href="/products.html" class="btn btn-primary">Ürünlere Git</a>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = orders.map(order => {
+          const currentIdx = statusSteps.indexOf(order.status);
+          return `
+          <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+              <div>
+                <strong style="font-size:1.1rem">Sipariş #${order.id}</strong>
+                <div style="color:var(--text-light);font-size:0.85rem">${formatDate(order.created_at)}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:1.2rem;font-weight:800;color:var(--primary)">${formatPrice(order.total)}</div>
+                <span class="alert alert-${getStatusClass(order.status)}" style="display:inline-block;padding:4px 12px;margin:0;font-size:0.8rem">
+                  ${getStatusText(order.status)}
+                </span>
+              </div>
+            </div>
+            ${order.status !== 'iptal' ? `
+            <div class="order-status">
+              ${statusSteps.map((step, idx) => `
+                <div class="status-step ${idx <= currentIdx ? (idx < currentIdx ? 'completed' : 'active') : ''}">
+                  <div class="icon"><i class="bi ${statusIcons[step]}"></i></div>
+                  <p>${getStatusText(step)}</p>
+                </div>
+              `).join('')}
+            </div>` : ''}
+            <button class="btn btn-sm btn-outline" onclick="viewOrder(${order.id})">Detay Görüntüle</button>
+          </div>`;
+        }).join('');
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function viewOrder(id) {
+      try {
+        const order = await API.get(`/orders/${id}`);
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        modal.innerHTML = `
+          <div style="background:white;border-radius:var(--radius);padding:32px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto">
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+              <h2 style="color:var(--primary)">Sipariş #${order.id}</h2>
+              <button onclick="this.closest('div[style]').parentElement.remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer">&times;</button>
+            </div>
+            <div style="margin-bottom:16px">
+              <strong>Adres:</strong> ${order.address}, ${order.city || ''}<br>
+              <strong>Telefon:</strong> ${order.phone}<br>
+              ${order.note ? `<strong>Not:</strong> ${order.note}` : ''}
+            </div>
+            <h3 style="margin-bottom:12px">Ürünler</h3>
+            ${order.items.map(item => `
+              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+                <span>${item.name} x${item.quantity}</span>
+                <strong>${formatPrice(item.price * item.quantity)}</strong>
+              </div>
+            `).join('')}
+            <div style="display:flex;justify-content:space-between;padding:16px 0 0;font-size:1.2rem;font-weight:800;color:var(--primary)">
+              <span>Toplam</span>
+              <span>${formatPrice(order.total)}</span>
+            </div>
+          </div>`;
+        document.body.appendChild(modal);
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

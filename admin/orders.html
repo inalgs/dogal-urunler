@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sipariş Yönetimi - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <button class="mobile-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+
+  <aside class="sidebar">
+    <div class="sidebar-brand"><i class="bi bi-tree"></i> Admin Panel</div>
+    <ul class="sidebar-menu">
+      <li><a href="/admin/"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+      <li><a href="/admin/products.html"><i class="bi bi-box-seam"></i> Ürünler</a></li>
+      <li><a href="/admin/orders.html" class="active"><i class="bi bi-receipt"></i> Siparişler</a></li>
+      <li><a href="/admin/blog.html"><i class="bi bi-journal-text"></i> Blog</a></li>
+    </ul>
+    <div class="sidebar-divider"></div>
+    <ul class="sidebar-menu">
+      <li><a href="/"><i class="bi bi-house"></i> Siteye Git</a></li>
+      <li><a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <h1>Sipariş Yönetimi</h1>
+      <div class="topbar-actions">
+        <select class="form-control" id="statusFilter" style="width:auto;min-width:180px" onchange="loadOrders()">
+          <option value="">Tüm Siparişler</option>
+          <option value="beklemede">Beklemede</option>
+          <option value="hazirlaniyor">Hazırlanıyor</option>
+          <option value="kargoda">Kargoda</option>
+          <option value="teslim_edildi">Teslim Edildi</option>
+          <option value="iptal">İptal</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Müşteri</th>
+            <th>Tutar</th>
+            <th>Durum</th>
+            <th>Tarih</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTable">
+          <tr><td colspan="6" style="text-align:center;padding:24px">Yükleniyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- DETAY MODAL -->
+  <div class="modal-overlay" id="orderModal" style="display:none">
+    <div class="modal" id="orderDetail"></div>
+  </div>
+
+  <script src="/admin/js/admin.js"></script>
+  <script>
+    if (!checkAdmin()) throw new Error('Unauthorized');
+
+    async function loadOrders() {
+      try {
+        const status = document.getElementById('statusFilter').value;
+        const url = status ? `/orders/admin/all?status=${status}` : '/orders/admin/all';
+        const orders = await API.get(url);
+        const tbody = document.getElementById('ordersTable');
+
+        if (orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-light)">Sipariş bulunamadı</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = orders.map(o => `
+          <tr>
+            <td><strong>#${o.id}</strong></td>
+            <td>
+              <div><strong>${o.user_name}</strong></div>
+              <div style="font-size:0.8rem;color:var(--text-light)">${o.user_email}</div>
+            </td>
+            <td><strong>${formatPrice(o.total)}</strong></td>
+            <td>${getStatusBadge(o.status)}</td>
+            <td>${formatDate(o.created_at)}</td>
+            <td>
+              <button class="btn btn-sm btn-outline" onclick="viewOrder(${o.id})"><i class="bi bi-eye"></i></button>
+              <select class="form-control" style="width:auto;display:inline-block;padding:4px 8px;font-size:0.8rem" onchange="updateStatus(${o.id}, this.value)">
+                <option value="" disabled selected>Durum</option>
+                <option value="beklemede">Beklemede</option>
+                <option value="hazirlaniyor">Hazırlanıyor</option>
+                <option value="kargoda">Kargoda</option>
+                <option value="teslim_edildi">Teslim Edildi</option>
+                <option value="iptal">İptal</option>
+              </select>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function updateStatus(id, status) {
+      try {
+        await API.put(`/orders/${id}/status`, { status });
+        showToast('Sipariş durumu güncellendi');
+        loadOrders();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function viewOrder(id) {
+      try {
+        // Admin endpoint doesn't have user-scoped detail, so use the all endpoint data
+        const orders = await API.get('/orders/admin/all');
+        const order = orders.find(o => o.id === id);
+        if (!order) throw new Error('Sipariş bulunamadı');
+
+        document.getElementById('orderDetail').innerHTML = `
+          <div class="modal-header">
+            <h2>Sipariş #${order.id}</h2>
+            <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+          </div>
+          <div style="margin-bottom:16px">
+            <strong>Müşteri:</strong> ${order.user_name} (${order.user_email})<br>
+            <strong>Telefon:</strong> ${order.phone || '-'}<br>
+            <strong>Adres:</strong> ${order.address || '-'}, ${order.city || ''}<br>
+            <strong>Tarih:</strong> ${formatDate(order.created_at)}<br>
+            <strong>Durum:</strong> ${getStatusBadge(order.status)}<br>
+            ${order.note ? `<strong>Not:</strong> ${order.note}` : ''}
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:16px 0 0;border-top:2px solid var(--border);font-size:1.2rem;font-weight:800;color:var(--primary)">
+            <span>Toplam</span>
+            <span>${formatPrice(order.total)}</span>
+          </div>
+        `;
+        document.getElementById('orderModal').style.display = 'flex';
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    function closeOrderModal() {
+      document.getElementById('orderModal').style.display = 'none';
+    }
+
+    document.getElementById('orderModal').addEventListener('click', (e) => {
+      if (e.target.id === 'orderModal') closeOrderModal();
+    });
+
+    loadOrders();
+  </script>
+</body>
+</html>

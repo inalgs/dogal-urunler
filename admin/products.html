@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ürün Yönetimi - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <button class="mobile-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+
+  <aside class="sidebar">
+    <div class="sidebar-brand"><i class="bi bi-tree"></i> Admin Panel</div>
+    <ul class="sidebar-menu">
+      <li><a href="/admin/"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+      <li><a href="/admin/products.html" class="active"><i class="bi bi-box-seam"></i> Ürünler</a></li>
+      <li><a href="/admin/orders.html"><i class="bi bi-receipt"></i> Siparişler</a></li>
+      <li><a href="/admin/blog.html"><i class="bi bi-journal-text"></i> Blog</a></li>
+    </ul>
+    <div class="sidebar-divider"></div>
+    <ul class="sidebar-menu">
+      <li><a href="/"><i class="bi bi-house"></i> Siteye Git</a></li>
+      <li><a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <h1>Ürün Yönetimi</h1>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openProductModal()">
+          <i class="bi bi-plus-lg"></i> Yeni Ürün
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Görsel</th>
+            <th>Ürün Adı</th>
+            <th>Kategori</th>
+            <th>Fiyat</th>
+            <th>Stok</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="productsTable">
+          <tr><td colspan="7" style="text-align:center;padding:24px">Yükleniyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- KATEGORİ YÖNETİMİ -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h2>Kategori Ekle</h2>
+      </div>
+      <form id="categoryForm" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+        <div class="form-group" style="flex:1;min-width:200px;margin:0">
+          <label>Kategori Adı</label>
+          <input type="text" class="form-control" id="catName" required>
+        </div>
+        <div class="form-group" style="flex:1;min-width:200px;margin:0">
+          <label>Açıklama</label>
+          <input type="text" class="form-control" id="catDesc">
+        </div>
+        <button type="submit" class="btn btn-secondary">Ekle</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- ÜRÜN MODAL -->
+  <div class="modal-overlay" id="productModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Yeni Ürün Ekle</h2>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <form id="productForm">
+        <input type="hidden" id="productId">
+        <div class="form-group">
+          <label>Ürün Adı</label>
+          <input type="text" class="form-control" id="name" required>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label>Fiyat (TL)</label>
+            <input type="number" class="form-control" id="price" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label>Eski Fiyat (opsiyonel)</label>
+            <input type="number" class="form-control" id="old_price" step="0.01">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label>Stok</label>
+            <input type="number" class="form-control" id="stock" value="0">
+          </div>
+          <div class="form-group">
+            <label>Ağırlık</label>
+            <input type="text" class="form-control" id="weight" placeholder="500g, 1L vb.">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Kategori</label>
+          <select class="form-control" id="category_id"></select>
+        </div>
+        <div class="form-group">
+          <label>Açıklama</label>
+          <textarea class="form-control" id="description"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label>Görsel 1 (Ana)</label>
+            <input type="file" class="form-control" id="image" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>Görsel 2</label>
+            <input type="file" class="form-control" id="image2" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>Görsel 3</label>
+            <input type="file" class="form-control" id="image3" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>Görsel 4</label>
+            <input type="file" class="form-control" id="image4" accept="image/*">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>İçindekiler</label>
+          <textarea class="form-control" id="ingredients" placeholder="Ürün içindekiler listesi..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Besin Değerleri (100g başına)</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <input type="text" class="form-control" id="nut_enerji_kcal" placeholder="Enerji (kcal)">
+            <input type="text" class="form-control" id="nut_enerji_kj" placeholder="Enerji (kJ)">
+            <input type="text" class="form-control" id="nut_yag" placeholder="Yağ (g)">
+            <input type="text" class="form-control" id="nut_doymus_yag" placeholder="Doymuş Yağ (g)">
+            <input type="text" class="form-control" id="nut_karbonhidrat" placeholder="Karbonhidrat (g)">
+            <input type="text" class="form-control" id="nut_seker" placeholder="Şeker (g)">
+            <input type="text" class="form-control" id="nut_lif" placeholder="Lif (g)">
+            <input type="text" class="form-control" id="nut_protein" placeholder="Protein (g)">
+            <input type="text" class="form-control" id="nut_tuz" placeholder="Tuz (g)">
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;margin-bottom:16px">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="is_featured"> Öne Çıkan
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="is_active" checked> Aktif
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/admin/js/admin.js"></script>
+  <script>
+    if (!checkAdmin()) throw new Error('Unauthorized');
+
+    let categories = [];
+
+    async function loadProducts() {
+      try {
+        const products = await API.get('/products?limit=999');
+        const tbody = document.getElementById('productsTable');
+        tbody.innerHTML = products.length === 0
+          ? '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-light)">Henüz ürün yok</td></tr>'
+          : products.map(p => `
+            <tr>
+              <td>${p.image ? `<img src="${p.image}" alt="${p.name}">` : '<i class="bi bi-image" style="font-size:1.5rem;color:#ccc"></i>'}</td>
+              <td><strong>${p.name}</strong></td>
+              <td>${p.category_name || '-'}</td>
+              <td>${formatPrice(p.price)}</td>
+              <td><span class="badge ${p.stock === 0 ? 'badge-error' : p.stock < 10 ? 'badge-warning' : 'badge-success'}">${p.stock}</span></td>
+              <td>${p.is_active ? '<span class="badge badge-success">Aktif</span>' : '<span class="badge badge-error">Pasif</span>'}</td>
+              <td>
+                <button class="btn btn-sm btn-outline" onclick="editProduct(${p.id}, '${p.slug}')"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id}, '${p.name}')"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          `).join('');
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function loadCategories() {
+      categories = await API.get('/products/categories');
+      const select = document.getElementById('category_id');
+      select.innerHTML = '<option value="">Seçiniz</option>' +
+        categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+
+    function openProductModal(id) {
+      document.getElementById('modalTitle').textContent = id ? 'Ürünü Düzenle' : 'Yeni Ürün Ekle';
+      document.getElementById('productId').value = id || '';
+      if (!id) document.getElementById('productForm').reset();
+      document.getElementById('productModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('productModal').style.display = 'none';
+    }
+
+    async function editProduct(id, slug) {
+      try {
+        const p = await API.get(`/products/${slug}`);
+        document.getElementById('productId').value = id;
+        document.getElementById('name').value = p.name;
+        document.getElementById('price').value = p.price;
+        document.getElementById('old_price').value = p.old_price || '';
+        document.getElementById('stock').value = p.stock;
+        document.getElementById('weight').value = p.weight || '';
+        document.getElementById('category_id').value = p.category_id || '';
+        document.getElementById('description').value = p.description || '';
+        document.getElementById('is_featured').checked = !!p.is_featured;
+        document.getElementById('is_active').checked = !!p.is_active;
+        document.getElementById('ingredients').value = p.ingredients || '';
+
+        // Besin değerlerini doldur
+        const nutritionKeys = ['enerji_kcal', 'enerji_kj', 'yag', 'doymus_yag', 'karbonhidrat', 'seker', 'lif', 'protein', 'tuz'];
+        let nut = null;
+        try { nut = p.nutrition ? (typeof p.nutrition === 'string' ? JSON.parse(p.nutrition) : p.nutrition) : null; } catch(e) {}
+        nutritionKeys.forEach(key => {
+          document.getElementById('nut_' + key).value = nut && nut[key] !== undefined ? nut[key] : '';
+        });
+
+        openProductModal(id);
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function deleteProduct(id, name) {
+      if (!confirm(`"${name}" ürününü silmek istediğinize emin misiniz?`)) return;
+      try {
+        await API.delete(`/products/${id}`);
+        showToast('Ürün silindi');
+        loadProducts();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('productId').value;
+      const formData = new FormData();
+      formData.append('name', document.getElementById('name').value);
+      formData.append('price', document.getElementById('price').value);
+      formData.append('old_price', document.getElementById('old_price').value);
+      formData.append('stock', document.getElementById('stock').value);
+      formData.append('weight', document.getElementById('weight').value);
+      formData.append('category_id', document.getElementById('category_id').value);
+      formData.append('description', document.getElementById('description').value);
+      formData.append('is_featured', document.getElementById('is_featured').checked ? 1 : 0);
+      formData.append('is_active', document.getElementById('is_active').checked ? 1 : 0);
+
+      ['image', 'image2', 'image3', 'image4'].forEach(field => {
+        const file = document.getElementById(field).files[0];
+        if (file) formData.append(field, file);
+      });
+
+      formData.append('ingredients', document.getElementById('ingredients').value);
+
+      // Besin değerlerini JSON olarak topla
+      const nutritionKeys = ['enerji_kcal', 'enerji_kj', 'yag', 'doymus_yag', 'karbonhidrat', 'seker', 'lif', 'protein', 'tuz'];
+      const nutrition = {};
+      let hasNutrition = false;
+      nutritionKeys.forEach(key => {
+        const val = document.getElementById('nut_' + key).value.trim();
+        if (val) { nutrition[key] = val; hasNutrition = true; }
+      });
+      if (hasNutrition) formData.append('nutrition', JSON.stringify(nutrition));
+
+      try {
+        if (id) {
+          await API.put(`/products/${id}`, formData);
+          showToast('Ürün güncellendi');
+        } else {
+          await API.post('/products', formData);
+          showToast('Ürün eklendi');
+        }
+        closeModal();
+        loadProducts();
+      } catch (e) { showToast(e.message, 'error'); }
+    });
+
+    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await API.post('/products/categories', {
+          name: document.getElementById('catName').value,
+          description: document.getElementById('catDesc').value
+        });
+        showToast('Kategori eklendi');
+        document.getElementById('categoryForm').reset();
+        loadCategories();
+      } catch (e) { showToast(e.message, 'error'); }
+    });
+
+    document.getElementById('productModal').addEventListener('click', (e) => {
+      if (e.target.id === 'productModal') closeModal();
+    });
+
+    loadCategories();
+    loadProducts();
+  </script>
+</body>
+</html>
