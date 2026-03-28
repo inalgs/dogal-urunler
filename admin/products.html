@@ -108,8 +108,8 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Kategori</label>
-          <select class="form-control" id="category_id"></select>
+          <label>Kategoriler</label>
+          <div id="categoryCheckboxes" style="display:flex;flex-wrap:wrap;gap:12px;padding:8px 0"></div>
         </div>
         <div class="form-group">
           <label>Açıklama</label>
@@ -195,9 +195,22 @@
 
     async function loadCategories() {
       categories = await API.get('/products/categories');
-      const select = document.getElementById('category_id');
-      select.innerHTML = '<option value="">Seçiniz</option>' +
-        categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      const container = document.getElementById('categoryCheckboxes');
+      container.innerHTML = categories.map(c => `
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" class="cat-checkbox" value="${c.id}"> ${c.name}
+        </label>
+      `).join('');
+    }
+
+    function getSelectedCategoryIds() {
+      return Array.from(document.querySelectorAll('.cat-checkbox:checked')).map(cb => cb.value);
+    }
+
+    function setSelectedCategoryIds(ids) {
+      document.querySelectorAll('.cat-checkbox').forEach(cb => {
+        cb.checked = ids.includes(parseInt(cb.value));
+      });
     }
 
     function openProductModal(id) {
@@ -220,11 +233,15 @@
         document.getElementById('old_price').value = p.old_price || '';
         document.getElementById('stock').value = p.stock;
         document.getElementById('weight').value = p.weight || '';
-        document.getElementById('category_id').value = p.category_id || '';
+        // category_id artık kullanılmıyor, çoklu kategori kullanılıyor
         document.getElementById('description').value = p.description || '';
         document.getElementById('is_featured').checked = !!p.is_featured;
         document.getElementById('is_active').checked = !!p.is_active;
         document.getElementById('ingredients').value = p.ingredients || '';
+
+        // Kategorileri seç
+        const catIds = (p.categories || []).map(c => c.id);
+        setSelectedCategoryIds(catIds);
 
         // Besin değerlerini doldur
         const nutritionKeys = ['enerji_kcal', 'enerji_kj', 'yag', 'doymus_yag', 'karbonhidrat', 'seker', 'lif', 'protein', 'tuz'];
@@ -256,8 +273,8 @@
       formData.append('old_price', document.getElementById('old_price').value);
       formData.append('stock', document.getElementById('stock').value);
       formData.append('weight', document.getElementById('weight').value);
-      formData.append('category_id', document.getElementById('category_id').value);
       formData.append('description', document.getElementById('description').value);
+      formData.append('category_ids', getSelectedCategoryIds().join(','));
       formData.append('is_featured', document.getElementById('is_featured').checked ? 1 : 0);
       formData.append('is_active', document.getElementById('is_active').checked ? 1 : 0);
 
