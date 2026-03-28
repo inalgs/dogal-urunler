@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ürün Detay - Doğal Ürünler</title>
+  <title>Ürün Detay - Ankazen</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/css/style.css">
@@ -16,7 +16,7 @@
   </div>
   <nav class="navbar">
     <div class="container">
-      <a href="/" class="navbar-brand"><i class="bi bi-tree" style="color:#8bc34a;font-size:1.8rem"></i> Doğal<span>Ürünler</span></a>
+      <a href="/" class="navbar-brand"><img src="/images/logo.jpg" alt="Ankazen" class="navbar-logo"></a>
       <ul class="nav-links">
         <li><a href="/">Ana Sayfa</a></li>
         <li><a href="/products.html">Ürünler</a></li>
@@ -116,7 +116,7 @@
   <footer class="footer" style="margin-top:0">
     <div class="container">
 
-      <div class="footer-bottom">&copy; 2026 DoğalÜrünler. Tüm hakları saklıdır.</div>
+      <div class="footer-bottom">&copy; 2026 Ankazen. Tüm hakları saklıdır.</div>
     </div>
   </footer>
 
@@ -190,7 +190,7 @@
     }
 
     function shareWhatsApp() {
-      const text = `${currentProduct.name} - ${formatPrice(currentProduct.price)} | Doğal Ürünler`;
+      const text = `${currentProduct.name} - ${formatPrice(currentProduct.price)} | Ankazen`;
       window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + window.location.href)}`, '_blank');
     }
 
@@ -305,7 +305,7 @@
       try {
         const p = await API.get(`/products/${slug}`);
         currentProduct = p;
-        document.title = `${p.name} - Doğal Ürünler`;
+        document.title = `${p.name} - Ankazen`;
         document.getElementById('breadcrumbName').textContent = p.name;
 
         const isFav = getFavorites().includes(p.id);

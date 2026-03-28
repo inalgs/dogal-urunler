@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doğal Ürünler - Katkısız, Doğal, Taze</title>
+  <title>Ankazen - Katkısız, Doğal, Taze</title>
   <meta name="description" content="Doğal ve katkısız gıda ürünleri. Bal, reçel, pekmez, baharat ve daha fazlası. Doğadan sofranıza.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -23,8 +23,7 @@
   <nav class="navbar">
     <div class="container">
       <a href="/" class="navbar-brand">
-        <i class="bi bi-tree" style="color:#8bc34a;font-size:1.8rem"></i>
-        Doğal<span>Ürünler</span>
+        <img src="/images/logo.jpg" alt="Ankazen" class="navbar-logo">
       </a>
       <ul class="nav-links" id="navLinks">
         <li><a href="/">Ana Sayfa</a></li>
@@ -64,34 +63,10 @@
     </div>
   </section>
 
-  <!-- KATEGORİLER -->
-  <section class="section">
-    <div class="container">
-      <div class="section-title">
-        <h2>Kategoriler</h2>
-        <p>Doğal lezzetlerin dünyasını keşfedin</p>
-      </div>
-      <div class="categories-grid" id="categoriesGrid">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ÖNE ÇIKAN ÜRÜNLER -->
-  <section class="section section-alt">
-    <div class="container">
-      <div class="section-title">
-        <h2>Öne Çıkan Ürünler</h2>
-        <p>En çok tercih edilen doğal ürünlerimiz</p>
-      </div>
-      <div class="products-grid" id="featuredProducts">
-        <div class="loading"><div class="spinner"></div></div>
-      </div>
-      <div style="text-align:center;margin-top:36px">
-        <a href="/products.html" class="btn btn-outline">Tüm Ürünleri Gör <i class="bi bi-arrow-right"></i></a>
-      </div>
-    </div>
-  </section>
+  <!-- KATEGORİ BAZLI ÜRÜNLER -->
+  <div id="categoryProducts">
+    <div class="loading" style="padding:60px 0"><div class="spinner"></div></div>
+  </div>
 
   <!-- NEDEN BİZ -->
   <section class="section">
@@ -146,7 +121,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <h3><i class="bi bi-tree"></i> DoğalÜrünler</h3>
+          <h3><img src="/images/logo.jpg" alt="Ankazen" style="height:35px;vertical-align:middle"> Ankazen</h3>
           <p>Doğadan sofranıza, katkısız ve sağlıklı ürünler. Geleneksel yöntemlerle üretilen lezzetleri keşfedin.</p>
         </div>
         <div>
@@ -174,72 +149,79 @@
         </div>
       </div>
       <div class="footer-bottom">
-        &copy; 2026 DoğalÜrünler. Tüm hakları saklıdır.
+        &copy; 2026 Ankazen. Tüm hakları saklıdır.
       </div>
     </div>
   </footer>
 
   <script src="/js/app.js"></script>
   <script>
-    const categoryIcons = {
-      'recel-marmelat': 'bi-cup-hot',
-      'yaglar': 'bi-moisture',
-      'sirke-sos': 'bi-cup-straw'
-    };
-
-    // Kategorileri yükle
-    async function loadCategories() {
+    // Kategori bazlı ürünleri yükle
+    async function loadCategoryProducts() {
       try {
         const categories = await API.get('/products/categories');
-        const grid = document.getElementById('categoriesGrid');
-        grid.innerHTML = categories.map(cat => `
-          <a href="/products.html?category=${cat.slug}" class="category-card">
-            <i class="bi ${categoryIcons[cat.slug] || 'bi-box'}"></i>
-            <h3>${cat.name}</h3>
-          </a>
-        `).join('');
+        const container = document.getElementById('categoryProducts');
 
         // Footer kategorileri
         const footerCats = document.getElementById('footerCategories');
         footerCats.innerHTML = categories.map(cat =>
           `<li><a href="/products.html?category=${cat.slug}">${cat.name}</a></li>`
         ).join('');
-      } catch (e) {
-        document.getElementById('categoriesGrid').innerHTML = '<p>Kategoriler yüklenemedi.</p>';
-      }
-    }
 
-    // Öne çıkan ürünleri yükle
-    async function loadFeaturedProducts() {
-      try {
-        const products = await API.get('/products/featured');
-        const grid = document.getElementById('featuredProducts');
-        grid.innerHTML = products.map(p => `
-          <div class="product-card">
-            <a href="/product-detail.html?slug=${p.slug}" class="product-card-image">
-              ${p.image
-                ? `<img src="${p.image}" alt="${p.name}">`
-                : `<i class="bi bi-image placeholder-icon"></i>`}
-              ${p.is_featured ? '<span class="product-badge">Popüler</span>' : ''}
-            </a>
-            <div class="product-card-body">
-              <div class="product-card-category">${p.category_name || ''}</div>
-              <h3><a href="/product-detail.html?slug=${p.slug}">${p.name}</a></h3>
-              <div class="product-price">
-                <span class="current">${formatPrice(p.price)}</span>
-                ${p.old_price ? `<span class="old">${formatPrice(p.old_price)}</span>` : ''}
+        if (categories.length === 0) {
+          container.innerHTML = '';
+          return;
+        }
+
+        let html = '';
+        for (let i = 0; i < categories.length; i++) {
+          const cat = categories[i];
+          const products = await API.get(`/products?category=${cat.slug}`);
+          if (products.length === 0) continue;
+
+          html += `
+            <section class="section ${i % 2 === 1 ? 'section-alt' : ''}">
+              <div class="container">
+                <div class="section-title">
+                  <h2>${cat.name}</h2>
+                  <p>${cat.description || ''}</p>
+                </div>
+                <div class="products-grid">
+                  ${products.map(p => `
+                    <div class="product-card">
+                      <a href="/product-detail.html?slug=${p.slug}" class="product-card-image">
+                        ${p.image
+                          ? `<img src="${p.image}" alt="${p.name}">`
+                          : `<i class="bi bi-image placeholder-icon"></i>`}
+                        ${p.is_featured ? '<span class="product-badge">Popüler</span>' : ''}
+                      </a>
+                      <div class="product-card-body">
+                        <div class="product-card-category">${p.category_name || ''}</div>
+                        <h3><a href="/product-detail.html?slug=${p.slug}">${p.name}</a></h3>
+                        <div class="product-price">
+                          <span class="current">${formatPrice(p.price)}</span>
+                          ${p.old_price ? `<span class="old">${formatPrice(p.old_price)}</span>` : ''}
+                        </div>
+                        ${p.weight ? `<div class="product-weight">${p.weight}</div>` : ''}
+                      </div>
+                      <div class="product-card-footer">
+                        <button class="btn btn-accent btn-block btn-sm" onclick="addToCart(${p.id})">
+                          <i class="bi bi-cart-plus"></i> Sepete Ekle
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+                <div style="text-align:center;margin-top:24px">
+                  <a href="/products.html?category=${cat.slug}" class="btn btn-outline">Tüm ${cat.name} Ürünleri <i class="bi bi-arrow-right"></i></a>
+                </div>
               </div>
-              ${p.weight ? `<div class="product-weight">${p.weight}</div>` : ''}
-            </div>
-            <div class="product-card-footer">
-              <button class="btn btn-accent btn-block btn-sm" onclick="addToCart(${p.id})">
-                <i class="bi bi-cart-plus"></i> Sepete Ekle
-              </button>
-            </div>
-          </div>
-        `).join('');
+            </section>
+          `;
+        }
+        container.innerHTML = html;
       } catch (e) {
-        document.getElementById('featuredProducts').innerHTML = '<p>Ürünler yüklenemedi.</p>';
+        document.getElementById('categoryProducts').innerHTML = '<p style="text-align:center;padding:40px">Ürünler yüklenemedi.</p>';
       }
     }
 
@@ -273,8 +255,7 @@
       }
     }
 
-    loadCategories();
-    loadFeaturedProducts();
+    loadCategoryProducts();
     loadBlogPreview();
   </script>
 </body>

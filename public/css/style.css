@@ -115,14 +115,12 @@ img {
 .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--primary);
 }
 
-.navbar-brand span {
-  color: var(--secondary);
+.navbar-logo {
+  height: 45px;
+  width: auto;
+  object-fit: contain;
 }
 
 .nav-links {

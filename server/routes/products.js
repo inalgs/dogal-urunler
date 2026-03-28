@@ -83,9 +83,18 @@ router.get('/featured', (req, res) => {
   res.json(products);
 });
 
-// Kategoriler
+// Kategoriler (sadece ürünü olanlar)
 router.get('/categories', (req, res) => {
-  const categories = db.prepare('SELECT * FROM categories').all();
+  const { all } = req.query;
+  let query;
+  if (all === '1') {
+    query = 'SELECT * FROM categories';
+  } else {
+    query = `SELECT DISTINCT c.* FROM categories c
+             JOIN product_categories pc ON pc.category_id = c.id
+             JOIN products p ON pc.product_id = p.id AND p.is_active = 1`;
+  }
+  const categories = db.prepare(query).all();
   res.json(categories);
 });
 
