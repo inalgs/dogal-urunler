@@ -194,7 +194,7 @@
     }
 
     async function loadCategories() {
-      categories = await API.get('/products/categories');
+      categories = await API.get('/products/categories?all=1');
       const container = document.getElementById('categoryCheckboxes');
       container.innerHTML = categories.map(c => `
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
